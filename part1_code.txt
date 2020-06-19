@@ -1,0 +1,40 @@
+person = pd.read_csv('person_level_data.csv')
+household = pd.read_csv('household_level_data.csv')
+
+# Combining the different values for male and female
+person.sex = person.sex.replace({'FEMALE': 'F'})
+person.sex = person.sex.replace({'female': 'F'})
+person.sex = person.sex.replace({'MALE': 'M'})
+person.sex = person.sex.replace({'male': 'M'})
+person.sex.value_counts()
+
+
+#alculating the average weekly hours worked among men and women.
+
+person.groupby('sex').weekly_hours_worked.mean()
+
+
+
+household = household.pivot(index='variable', columns='household_id', values='value')
+
+
+#calculating the three households (i.e. household_ids) with the highest per person incomes.
+
+household ['per_person'] = household.hh_income/household.hh_size
+
+household.sort_values(by='per_person', ascending=False)
+
+
+#creating a new dataframe to calculate the total income earned per person 
+
+new = pd.merge(person, household, how='inner', on='household_id')
+
+new['personal_income'] = new.hh_income_pct*new.hh_income
+
+new = new.sort_values(by='personal_income', ascending=False)
+
+
+#calculating the 80th percentile of age among people in each of the five marital categories.
+
+new.groupby('marital_status').age.quantile(0.8)
+
