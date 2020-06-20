@@ -1,0 +1,62 @@
+X = train.drop(['person_id', 'uninsured', 'household_id'], axis=1)
+y= train['uninsured']
+
+
+#One Hot encoder
+
+cont = X.select_dtypes(exclude='object')
+
+cat = X.select_dtypes(include='object')
+
+ehe = OneHotEncoder(drop='first')
+tran = ehe.fit_transform(cat).toarray()
+
+tran_df= pd.DataFrame(tran, columns=ehe.get_feature_names(cat.columns))
+
+
+#scaling the continuous variables
+
+for col in cont.columns:
+    cont[col]= (cont[col]-min(cont[col]))/(max(cont[col]-min(cont[col])))
+    
+    
+#creating training and testing sets
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=28)
+
+
+# A fitting a Random Forest model
+from sklearn.ensemble import RandomForestClassifier
+
+R_forest = RandomForestClassifier(n_estimators=10)
+
+R_forest = RandomForestClassifier()
+R_model = R_forest.fit(X_train, y_train)
+
+#Checking for accuracy, precision and recall
+
+y_pred = R_model.predict(X_test)
+
+from sklearn import metrics
+
+metrics.f1_score(y_test, y_pred)
+
+print("Precision:",metrics.precision_score(y_test, y_pred))
+
+metrics.f1_score(y_test, y_pred)
+metrics.recall_score(y_test, y_pred)
+
+
+#Creatinga csv file with predictions 
+unlabeled = pd.read_csv('unlabeled_data.csv')
+
+
+predictions = R_model.predict_proba(new)
+
+df = pd.DataFrame(predictions)
+
+df['person_id'] = unlabeled.person_id
+
+
+df.head()
+

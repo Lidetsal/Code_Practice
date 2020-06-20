@@ -1,0 +1,13 @@
+#creating a data visualization that shows the relationship between insurance status, age and income
+
+plt.figure(figsize=(10,6))
+sns.lineplot(data=training, x='age', y='total_income', hue='uninsured', )
+
+label = ['insured', 'uninsured']
+
+plt.title('The relationship between insurance status, age and income', fontsize=17)
+plt.xlabel('Age', fontsize=15)
+plt.ylabel('Total Income', fontsize=15)
+
+plt.legend(title='Insurance Status', loc='upper right', labels=['Insured', 'Uninsured'])
+plt.show()
