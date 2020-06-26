@@ -1,14 +1,45 @@
+#Imports
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import  OneHotEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_validate
+
+#EDA
+train = pd.read_csv('training_set_data.csv')
+
+
+#Changing the values of male and female to two uniform values
+train.sex = train.sex.replace({'FEMALE': 'F'})
+train.sex = train.sex.replace({'female': 'F'})
+train.sex = train.sex.replace({'MALE': 'M'})
+train.sex = train.sex.replace({'male': 'M'})
+
+#Transforming the language column to two values, English and non English 
+
+for val in train.language.values:
+    if val != 'English':
+        train.language = train.language.replace({val:'not_english'})
+
+
+# Creating target and independent variables
 X = train.drop(['person_id', 'uninsured', 'household_id'], axis=1)
 y= train['uninsured']
 
 
-#One Hot encoder
+#One Hot encoder to transform categorical variables to numeric 
 
 cont = X.select_dtypes(exclude='object')
 
 cat = X.select_dtypes(include='object')
 
 ehe = OneHotEncoder(drop='first')
+
+#transforming categorical variables to numeric 
 tran = ehe.fit_transform(cat).toarray()
 
 tran_df= pd.DataFrame(tran, columns=ehe.get_feature_names(cat.columns))
@@ -25,38 +56,52 @@ for col in cont.columns:
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=28)
 
 
-# A fitting a Random Forest model
-from sklearn.ensemble import RandomForestClassifier
+# Fitting a Logistic Regression model
 
-R_forest = RandomForestClassifier(n_estimators=10)
+logreg = LogisticRegression(random_state=28)
 
-R_forest = RandomForestClassifier()
-R_model = R_forest.fit(X_train, y_train)
+model = logreg.fit(X_train, y_train)
 
-#Checking for accuracy, precision and recall
+#Making predictions on test data
+y_pred = logreg.predict(X_test)
 
-y_pred = R_model.predict(X_test)
 
-from sklearn import metrics
+#Creating a confusion metrics
 
-metrics.f1_score(y_test, y_pred)
+confusion = metrics.confusion_matrix(y_test, y_pred)
+print(confusion)
 
-print("Precision:",metrics.precision_score(y_test, y_pred))
 
-metrics.f1_score(y_test, y_pred)
+#Checking for different evaluation metrics to assess model performance 
+metrics.accuracy_score(y_test, y_pred)
+metrics.precision_score(y_test, y_pred)
 metrics.recall_score(y_test, y_pred)
 
 
-#Creatinga csv file with predictions 
-unlabeled = pd.read_csv('unlabeled_data.csv')
+
+#Adjusting the decision threshold and checking for model performance
+from sklearn.preprocessing import binarize
+
+y_pred_class = binarize(y_pred_prob, 0.3)
+print(metrics.confusion_matrix(y_test, y_pred_class))
 
 
-predictions = R_model.predict_proba(new)
-
-df = pd.DataFrame(predictions)
-
-df['person_id'] = unlabeled.person_id
+sensitivity = 13598 / float(1036 + 13598)
+precision = 16279 / float(16279 + 75)
 
 
-df.head()
+
+#creating a dataframe and visualization of featuers
+
+df_coef = pd.DataFrame(X_train.columns)
+
+df_coef['features'] = coef
+
+df_coef.columns = ['coef', 'features']
+
+
+plt.figure(figsize=(20,20))
+sns.barplot(x=coef, y=X_train.columns)
+plt.yticks(fontsize=40)
+plt.show()
 
